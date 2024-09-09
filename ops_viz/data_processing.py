@@ -56,3 +56,46 @@ class DataHandler:
         except FileNotFoundError as e:
             print(f"CSV file not found: {e.filename}")
             exit()
+
+
+class ProcessData(DataHandler):
+    """
+    A class for processing and analyzing data.
+
+    This class provides methods to
+        - Assigns and ideal functions to each train Function (least square)
+        - Maps individual test Data to one of the four selected ideal Functions
+    """
+    def __init__(self, test_path, session):
+        super().__init__(session)
+        self.test_path = test_path
+        self.math = MathUtils()
+
+    def select_functions(self):
+        """
+        Selects the 4 ideal functions which have the minimum sum of all
+        y-deviations squared then calculates their maximum deviation.
+
+        :return: A dictionary mapping training data columns to their selected
+        ideal function.
+        """
+        # loads data from database
+        ideal_data = self.get_data('ideal_functions')
+        train_data = self.get_data('train_data')
+
+        self.selection = {}
+        for train_column in train_data.columns[1:]:
+            # Loops through the train_data table columns Y1,..,Y4
+            least_squared = float('inf')
+            for ideal_column in ideal_data.columns[1:]:
+                # Loops through the ideal_functions table columns Y1,..,Y50
+                sqd_sum = self.math.sqd_dev_sum(train_data[train_column],
+                                                ideal_data[ideal_column])
+                if least_squared > sqd_sum:
+                    least_squared = sqd_sum
+                    # Finds max deviation between train data and ideal function
+                    max_dev = self.math.max_deviation(train_data[train_column],
+                                                      ideal_data[ideal_column])
+                    self.selection[train_column] = [ideal_column, max_dev]
+        print("The following functions has been selected: \n", self.selection)
+        return self.selection
