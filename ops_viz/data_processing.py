@@ -101,3 +101,45 @@ class ProcessData(DataHandler):
                     self.selection[train_column] = [ideal_column, max_dev]
         print("The following functions has been selected: \n", self.selection)
         return self.selection
+
+    def insert_test_data(self):
+        """
+        Inserts test data into the database after assigning the best fitting
+        ideal functions and calculating deviations.
+        """
+        test_data = self.get_csv_data(self.test_path)
+        print('Test CSV file was loaded successfully.')
+        ideal_data = self.get_data('ideal_functions')
+        # Sets the 'x' column as the index of the ideal_data DataFrame
+        ideal_data.set_index('x', inplace=True)
+
+        # Initializes new columns in the DataFrame
+        test_data['delta_y'] = None
+        test_data['ideal_function'] = None
+
+        # Check if for each (x, y) pair fits one of the four ideal functions.
+        for i in range(len(test_data)):
+            minimum_dev = float('inf')
+            x_value = test_data.iloc[i]['x']
+            y_value = test_data.iloc[i]['y']
+
+            for ideal_func, ideal_max_dev in self.selection.values():
+                ideal_y = ideal_data.loc[x_value, ideal_func]
+                existing_dev = abs(y_value - ideal_y)
+                threshold = ideal_max_dev * np.sqrt(2)
+
+                if existing_dev <= threshold and existing_dev < minimum_dev:
+                    minimum_dev = existing_dev
+                    # adds the assigned function and its deviation to DataFrame
+                    test_data.at[i, 'delta_y'] = round(minimum_dev, 8)
+                    test_data.at[i, 'ideal_function'] = ideal_func
+        print('Ideal functions were assigned to the test data:\n', test_data)
+
+        # Inserts test data into the database
+        try:
+            test_data.to_sql(name='test_data',
+                             con=self.session.bind,
+                             index=False)
+            print('Result DataFrame successfully inserted into the database.')
+        except Exception as e:
+            print(f"Result DataFrame insert failed. Error occurred: {e}")

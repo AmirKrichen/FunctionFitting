@@ -20,6 +20,8 @@ def main():
                                  session=session)
     # Assigns and ideal functions to each train Function (least square)
     selected_functions = data_processor.select_functions()
+    # Maps individual test Data to one of the four selected ideal Functions
+    data_processor.insert_test_data()
 
 
 if __name__ == "__main__":
