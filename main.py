@@ -1,5 +1,6 @@
 from database.models import create_session
 from database.database_setup import InsertData
+from ops_viz.data_processing import ProcessData
 
 
 def main():
@@ -13,6 +14,14 @@ def main():
     data_loader = InsertData(train_path="./data/train.csv",
                              ideal_path="./data/ideal.csv")
     data_loader.bulk_insert()
+
+    # Processes and analyses the data
+    data_processor = ProcessData(test_path="./data/test.csv",
+                                 session=session)
+    # Assigns and ideal functions to each train Function (least square)
+    selected_functions = data_processor.select_functions()
+    # Maps individual test Data to one of the four selected ideal Functions
+    data_processor.insert_test_data()
 
 
 if __name__ == "__main__":
