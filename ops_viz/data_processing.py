@@ -84,14 +84,16 @@ class ProcessData(DataHandler):
         train_data = self.get_data('train_data')
 
         self.selection = {}
+        # Loops through the train_data table columns Y1,..,Y4
         for train_column in train_data.columns[1:]:
-            # Loops through the train_data table columns Y1,..,Y4
             least_squared = float('inf')
+
+            # Loops through the ideal_functions table columns Y1,..,Y50
             for ideal_column in ideal_data.columns[1:]:
-                # Loops through the ideal_functions table columns Y1,..,Y50
                 sqd_sum = self.math.sqd_dev_sum(train_data[train_column],
                                                 ideal_data[ideal_column])
                 if least_squared > sqd_sum:
+                    # Finds the function with the least squared error
                     least_squared = sqd_sum
                     # Finds max deviation between train data and ideal function
                     max_dev = self.math.max_deviation(train_data[train_column],

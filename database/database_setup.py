@@ -20,6 +20,7 @@ class InsertData:
         Reads data from the entered CSV files and inserts it into the database.
         """
         try:
+            # Reads CSV data as Pandas DataFrame
             self.train_dataset = pd.read_csv(self.train_path)
             self.ideal_dataset = pd.read_csv(self.ideal_path)
             print("train & ideal CSV files were loaded successfully.")
@@ -28,11 +29,14 @@ class InsertData:
             exit()
 
         session = create_session()
+
+        # Prepares data for bulk insertion
         datasets = {
             TrainData: self.train_dataset.to_dict(orient='records'),
             IdealFunctions: self.ideal_dataset.to_dict(orient='records')
         }
 
+        # Bulk inserts data into the specified table.
         with session as local_session:
             try:
                 for table, dataset in datasets.items():
@@ -40,5 +44,6 @@ class InsertData:
                 local_session.commit()
                 print("Data was successfully inserted into the database.")
             except Exception as e:
+                # Rollback in case of error
                 local_session.rollback()
                 print(f"Data bulk insert failed. Error occurred: {e}")
