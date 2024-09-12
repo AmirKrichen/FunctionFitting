@@ -1,6 +1,7 @@
 from database.models import create_session
 from database.database_setup import InsertData
 from ops_viz.data_processing import ProcessData
+from ops_viz.visualizations import VisualizeData
 
 
 def main():
@@ -22,6 +23,12 @@ def main():
     selected_functions = data_processor.select_functions()
     # Maps individual test Data to one of the four selected ideal Functions
     data_processor.insert_test_data()
+
+    # Visualize results
+    data_visualizer = VisualizeData(functions=selected_functions,
+                                    session=session)
+    # Compare training data with ideal functions to see how they align.
+    data_visualizer.plot_train_vs_ideal()
 
 
 if __name__ == "__main__":
