@@ -29,6 +29,8 @@ def main():
                                     session=session)
     # Compare training data with ideal functions to see how they align.
     data_visualizer.plot_train_vs_ideal()
+    # Show how test data aligns or deviates from each ideal function.
+    data_visualizer.plot_test_vs_ideal()
 
 
 if __name__ == "__main__":
