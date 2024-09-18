@@ -31,6 +31,8 @@ def main():
     data_visualizer.plot_train_vs_ideal()
     # Show how test data aligns or deviates from each ideal function.
     data_visualizer.plot_test_vs_ideal()
+    # Overlay test data on ideal functions to visualize the mapping we did.
+    data_visualizer.plot_test_over_ideal()
 
 
 if __name__ == "__main__":

@@ -145,3 +145,71 @@ class VisualizeData(DataHandler):
             print("Error: Permission denied when trying to save the file.")
         except Exception as e:
             print(f"An unexpected error occurred: {e}")
+
+    def plot_test_over_ideal(self):
+        """
+        Plots test data against ideal functions and marks the residual errors.
+
+        Saves the plot in output folder an PNG image file.
+        """
+        # Retrieves ideal_function column from test data table
+        mapped_ideal_test = self.test_data['ideal_function']
+
+        # Creates a new figure axis for plotting
+        fig, ax = plt.subplots(layout='constrained', figsize=(9, 9))
+        ax.set_title("Best Fit Ideal Functions with Testing Data Overlay")
+
+        # Defines colors for different ideal functions
+        color = ['#010221', '#0A7373', '#638731', '#EDAA25']
+        ax.set_prop_cycle(cycler(color=color))
+
+        # Retrieves unmapped test values for plotting
+        unmapped_test = self.test_data[mapped_ideal_test.isna()]
+        # Plots Unmapped test values.
+        ax.scatter(unmapped_test['x'],
+                   unmapped_test['y'],
+                   label='Unmapped test values',
+                   c='grey', alpha=0.3)
+
+        # Plot each ideal function and its mapped test values
+        for current_y, _ in self.functions.values():
+
+            # Plots the selected ideal function line
+            ax.plot(self.ideal_data['x'],
+                    self.ideal_data[current_y],
+                    label=f'Ideal function {current_y}')
+
+            # Retrieves mapped test values corresponding to each ideal function
+            mapped_test = self.test_data[mapped_ideal_test == current_y]
+            # Plots mapped test values corresponding to each ideal function
+            ax.scatter(mapped_test['x'],
+                       mapped_test['y'],
+                       label='Mapped test values')
+
+            # Merge DataFrame to get ideal y value for residual calculation
+            merged_df = pd.merge(mapped_test,
+                                 self.ideal_data[['x', current_y]],
+                                 'left', on='x')
+            # Plot residual error lines
+            vline = ax.vlines(mapped_test['x'],
+                              mapped_test['y'],
+                              merged_df[current_y],
+                              linewidth=0.8, color='red', zorder=0.9,
+                              linestyle='--')
+
+        # Sets axis labels and legend
+        ax.set_xlabel('X value')
+        ax.set_ylabel('Y value')
+        vline.set_label('Residual Error')
+        ax.legend(fontsize='x-small')
+
+        try:
+            # Displays the plot and saves it to to output folder
+            plt.savefig('Output/test_over_ideal.png')
+            print('figure was saved successfully to output folder.')
+            plt.show()
+            plt.close()
+        except PermissionError:
+            print("Error: Permission denied when trying to save the file.")
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
