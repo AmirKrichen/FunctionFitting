@@ -33,6 +33,8 @@ def main():
     data_visualizer.plot_test_vs_ideal()
     # Overlay test data on ideal functions to visualize the mapping we did.
     data_visualizer.plot_test_over_ideal()
+    # Create individual plots for test data against each ideal function.
+    data_visualizer.plot_test_vs_ideal_individual()
 
 
 if __name__ == "__main__":

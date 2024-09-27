@@ -213,3 +213,69 @@ class VisualizeData(DataHandler):
             print("Error: Permission denied when trying to save the file.")
         except Exception as e:
             print(f"An unexpected error occurred: {e}")
+
+    def plot_test_vs_ideal_individual(self):
+        """
+        Plots test data for each ideal function and showcases deviation region.
+
+        Saves the plots in output folder an PNG image file.
+        """
+        # Retrieves ideal_function column from test data table
+        mapped_ideal_test = self.test_data['ideal_function']
+
+        # Loop through selected ideal functions and their maximum deviation.
+        for current_y, max_deviation in self.functions.values():
+
+            # Creates a new figure axis for plotting
+            fig, ax = plt.subplots(layout='constrained', figsize=(9, 9))
+            ax.set_title(f'Test Data vs. Ideal Function {current_y} Deviation')
+
+            # Plots the selected ideal function line
+            ax.plot(self.ideal_data['x'],
+                    self.ideal_data[current_y],
+                    label=f'Ideal function {current_y}',
+                    zorder=1.1)
+
+            # Filter mapped and unmapped test values for plotting
+            is_mapped = mapped_ideal_test == current_y
+            mapped_test = self.test_data[is_mapped]
+            unmapped_test = self.test_data[~is_mapped]
+
+            # Plots unmapped test values corresponding to the ideal function
+            ax.scatter(unmapped_test['x'],
+                       unmapped_test['y'],
+                       label='Unmapped test values',
+                       color='grey', s=20, zorder=1.2)
+
+            # Plots mapped test values corresponding to the ideal function
+            ax.scatter(mapped_test['x'],
+                       mapped_test['y'],
+                       label='Mapped test values',
+                       color='red', s=20, zorder=1.2)
+
+            # Retrieves Deviation threshold Intervals
+            current_y_column = self.ideal_data[current_y]
+            ymin = current_y_column - max_deviation * np.sqrt(2)
+            ymax = current_y_column + max_deviation * np.sqrt(2)
+            # Plots the Root-Mean-Square Threshold region of the deviation
+            ax.fill_between(self.ideal_data['x'],
+                            ymin,
+                            ymax,
+                            alpha=0.25, color='grey', zorder=1,
+                            label='Threshold region')
+
+            # Sets axis labels, grid and legend
+            ax.set_xlabel('X value')
+            ax.set_ylabel('Y value')
+            ax.grid(alpha=0.2)
+            ax.legend(fontsize='x-small')
+
+            try:
+                # Saves the plot for each ideal function to to output folder
+                plt.savefig(f'Output/plot_test_vs_ideal_{current_y}.png')
+                print(f'figure {current_y} is successfully saved.')
+                plt.close()
+            except PermissionError:
+                print("Error: Permission denied when trying to save the file.")
+            except Exception as e:
+                print(f"saving figure {current_y} failed: {e}")
