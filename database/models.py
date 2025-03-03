@@ -1,6 +1,6 @@
-from sqlalchemy import Float, MetaData, create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped
+from sqlalchemy import Float, String, MetaData, create_engine
 
 
 class Base(DeclarativeBase):
@@ -32,6 +32,20 @@ class IdealFunctions(Base):
         locals()[f"y{i}"]: Mapped[float] = mapped_column(Float, nullable=False)
     # We use the locals() function here to name our columns dynamically
     # Columns range from y1 to y50
+
+
+class TestData(Base):
+    """
+    Metadata for the test_data table in the database.
+    """
+    __tablename__ = "test_data"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    x: Mapped[float] = mapped_column(Float)
+    y: Mapped[float] = mapped_column(Float)
+    delta_y: Mapped[float] = mapped_column(Float, nullable=True)
+    ideal_function: Mapped[str] = mapped_column(String, nullable=True)
+    # we need to add an id column to test test table as it has repeated values
+    # SQLAlchemy's Declarative Mapping requires a primary key column
 
 
 def create_session(database_reset=False):
