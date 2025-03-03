@@ -1,6 +1,6 @@
 import pandas as pd
 from sqlalchemy import insert
-from .models import create_session, TrainData, IdealFunctions
+from .models import create_session, TrainData, IdealFunctions, TestData
 
 
 class InsertData:
@@ -8,12 +8,13 @@ class InsertData:
     Handles the insertion of data from CSV files into the database.
     """
 
-    def __init__(self, train_path, ideal_path):
+    def __init__(self, train_path, ideal_path, test_path):
         """
-        Constructs all the necessary attributes for the InsertData object.
+        Constructs all the attributes for the InsertData object.
         """
         self.train_path = train_path
         self.ideal_path = ideal_path
+        self.test_path = test_path
 
     def bulk_insert(self):
         """
@@ -23,17 +24,18 @@ class InsertData:
             # Reads CSV data as Pandas DataFrame
             self.train_dataset = pd.read_csv(self.train_path)
             self.ideal_dataset = pd.read_csv(self.ideal_path)
-            print("train & ideal CSV files were loaded successfully.")
+            self.test_dataset = pd.read_csv(self.test_path)
+            print("All CSV files were loaded successfully.")
         except FileNotFoundError as e:
             print(f"CSV file not found: {e.filename}")
             exit()
 
         session = create_session()
-
         # Prepares data for bulk insertion
         datasets = {
             TrainData: self.train_dataset.to_dict(orient='records'),
-            IdealFunctions: self.ideal_dataset.to_dict(orient='records')
+            IdealFunctions: self.ideal_dataset.to_dict(orient='records'),
+            TestData: self.test_dataset.to_dict(orient='records')
         }
 
         # Bulk inserts data into the specified table.

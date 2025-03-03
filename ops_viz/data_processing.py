@@ -45,18 +45,6 @@ class DataHandler:
             except pd.errors.DatabaseError as e:
                 print(f"Error retrieving {table} data: {e}")
 
-    def get_csv_data(self, file_path):
-        """
-        Loads a CSV file into a Pandas DataFrame.
-
-        :return: A Pandas DataFrame with data from the specified file
-        """
-        try:
-            return pd.read_csv(file_path)
-        except FileNotFoundError as e:
-            print(f"CSV file not found: {e.filename}")
-            exit()
-
 
 class ProcessData(DataHandler):
     """
@@ -66,9 +54,8 @@ class ProcessData(DataHandler):
         - Assigns and ideal functions to each train Function (least square)
         - Maps individual test Data to one of the four selected ideal Functions
     """
-    def __init__(self, test_path, session):
+    def __init__(self, session):
         super().__init__(session)
-        self.test_path = test_path
         self.math = MathUtils()
 
     def select_functions(self):
@@ -107,15 +94,10 @@ class ProcessData(DataHandler):
         Inserts test data into the database after assigning the best fitting
         ideal functions and calculating deviations.
         """
-        test_data = self.get_csv_data(self.test_path)
-        print('Test CSV file was loaded successfully.')
+        test_data = self.get_data('test_data')
         ideal_data = self.get_data('ideal_functions')
         # Sets the 'x' column as the index of the ideal_data DataFrame
         ideal_data.set_index('x', inplace=True)
-
-        # Initializes new columns in the DataFrame
-        test_data['delta_y'] = None
-        test_data['ideal_function'] = None
 
         # Check if for each (x, y) pair fits one of the four ideal functions.
         for i in range(len(test_data)):
@@ -139,7 +121,8 @@ class ProcessData(DataHandler):
         try:
             test_data.to_sql(name='test_data',
                              con=self.session.bind,
-                             index=False)
-            print('Result DataFrame successfully inserted into the database.')
+                             index=False,
+                             if_exists='replace')
+            print('Mapped Test data successfully inserted into the database.')
         except Exception as e:
             print(f"Result DataFrame insert failed. Error occurred: {e}")

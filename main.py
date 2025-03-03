@@ -1,6 +1,7 @@
 from database.models import create_session
 from database.database_setup import InsertData
 from ops_viz.data_processing import ProcessData
+from ops_viz.visualizations import VisualizeData
 
 
 def main():
@@ -10,18 +11,30 @@ def main():
     # Resets database and create a session instance
     session = create_session(database_reset=True)
 
-    # Inserts train and ideal data into the database
+    # Inserts train, ideal and test data into the database
     data_loader = InsertData(train_path="./data/train.csv",
-                             ideal_path="./data/ideal.csv")
+                             ideal_path="./data/ideal.csv",
+                             test_path="./data/test.csv")
     data_loader.bulk_insert()
 
     # Processes and analyses the data
-    data_processor = ProcessData(test_path="./data/test.csv",
-                                 session=session)
+    data_processor = ProcessData(session=session)
     # Assigns and ideal functions to each train Function (least square)
     selected_functions = data_processor.select_functions()
     # Maps individual test Data to one of the four selected ideal Functions
     data_processor.insert_test_data()
+
+    # Visualize results
+    data_visualizer = VisualizeData(functions=selected_functions,
+                                    session=session)
+    # Compare training data with ideal functions to see how they align.
+    data_visualizer.plot_train_vs_ideal()
+    # Show how test data aligns or deviates from each ideal function.
+    data_visualizer.plot_test_vs_ideal()
+    # Overlay test data on ideal functions to visualize the mapping we did.
+    data_visualizer.plot_test_over_ideal()
+    # Create individual plots for test data against each ideal function.
+    data_visualizer.plot_test_vs_ideal_individual()
 
 
 if __name__ == "__main__":
